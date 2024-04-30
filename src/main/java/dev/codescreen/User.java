@@ -1,54 +1,32 @@
 package dev.codescreen;
 
 /*
-* This class represents a User object.
-* A User object will have a first name, last name, email, and hashed password.
-*/
+ * This class represents a User object.
+ * A User object will have a UserDetails object and an int account balance.
+ * This serves as a Snapshot of the User's account balance currently.
+ */
 public class User {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String hashedPassword;
+    private UserDetails userDetails;
+    private double accountBalance;
 
-    public User(String firstName, String lastName, String email, String password) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        // Hash the password before storing it
-        this.hashedPassword = password;
+    public User(UserDetails userDetails) {
+        this.userDetails = userDetails;
+        this.accountBalance = 0.0;
     }
 
     // GETTERS
-    public String getFirstName() {
-        return firstName;
+    public UserDetails getUserDetails() {
+        return userDetails;
     }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getHashedPassword() {
-        return hashedPassword;
+    public double getAccountBalance() {
+        return accountBalance;
     }
 
     // SETTERS
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setUserDetails(UserDetails userDetails) {
+        this.userDetails = userDetails;
     }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setHashedPassword(String password) {
-        this.hashedPassword = password;
+    public void setAccountBalance(double accountBalance) {
+        this.accountBalance = accountBalance;
     }
 }
