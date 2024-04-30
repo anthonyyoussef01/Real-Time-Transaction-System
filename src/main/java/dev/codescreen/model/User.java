@@ -1,4 +1,4 @@
-package dev.codescreen;
+package dev.codescreen.model;
 
 /*
  * This class represents a User object.

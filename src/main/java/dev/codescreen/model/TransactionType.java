@@ -1,4 +1,4 @@
-package dev.codescreen;
+package dev.codescreen.model;
 
 /*
  * This enum represents the type of transaction that can be performed.
