@@ -1,0 +1,163 @@
+package dev.codescreen.model;
+
+import dev.codescreen.exceptions.InsufficientBalanceException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class UserAccountTest {
+    private UserAccount userAccount;
+    private UserDetails userDetails;
+    private User user;
+    private TransactionEvent creditEvent;
+    private TransactionEvent debitEvent;
+
+    @BeforeEach
+    void setUp() {
+        this.userDetails = new UserDetails(
+            "John", "Doe", "john.doe@example.com", "pass"
+        );
+        this.user = new User(userDetails);
+        this.userAccount = new UserAccount(user);
+        this.creditEvent = new TransactionEvent(1L, TransactionType.CREDIT, 150.0);
+        this.debitEvent = new TransactionEvent(2L, TransactionType.DEBIT, 50.0);
+    }
+
+    // addTransactionEvent() tests ------------------------------------------------
+    @Test
+    void testAddTransactionEvent_Credit() throws InsufficientBalanceException {
+        this.userAccount.addTransactionEvent(this.creditEvent);                   // +150.0
+        assertEquals(150.0, this.user.getAccountBalance());
+        assertTrue(this.userAccount.getTransactionLog().contains(this.creditEvent));
+    }
+
+    @Test
+    void testAddTransactionEvent_Debit() throws InsufficientBalanceException {
+        this.userAccount.addTransactionEvent(this.creditEvent);                   // +150.0
+        this.userAccount.addTransactionEvent(this.debitEvent);                    // -50.0
+        assertEquals(100.0, this.user.getAccountBalance());
+        assertTrue(this.userAccount.getTransactionLog().contains(this.debitEvent));
+    }
+
+    @Test
+    void testAddTransactionEvent_InsufficientBalance() {
+        assertThrows(
+            InsufficientBalanceException.class,
+            () -> this.userAccount.addTransactionEvent(this.debitEvent)           // -50.0
+        );
+    }
+
+    // recalculateBalance() tests ------------------------------------------------
+    @Test
+    void testRecalculateBalance() throws InsufficientBalanceException {
+        TransactionEvent creditEvent = new TransactionEvent(
+            System.currentTimeMillis(), TransactionType.CREDIT, 200.0
+        );
+        TransactionEvent debitEvent = new TransactionEvent(
+            System.currentTimeMillis(), TransactionType.DEBIT, 200.0
+        );
+        this.userAccount.addTransactionEvent(creditEvent);
+        this.userAccount.addTransactionEvent(debitEvent);
+        assertEquals(
+            0.0, this.userAccount.recalculateBalance(),
+            "The balance should be 0.0 after adding a credit and a debit of the same amount"
+        );
+    }
+
+    @Test
+    void testRecalculateBalance_AfterIncorrectBalance() throws InsufficientBalanceException {
+        this.userAccount.addTransactionEvent(this.creditEvent);                   // +150.0
+        this.userAccount.addTransactionEvent(this.debitEvent);                    // -50.0
+        this.user.setAccountBalance(200.0);
+        this.userAccount.recalculateBalance();
+        assertEquals(
+            100.0, this.userAccount.recalculateBalance(),
+            "The balance should be correct after recalculating the balance, " +
+                "even if the User's account balance was previously incorrect"
+        );
+    }
+
+    @Test
+    void testRecalculateBalance_EmptyTransactionLog() {
+        assertEquals(
+            0.0, this.userAccount.recalculateBalance(),
+            "The balance should be 0.0 if the transaction log is empty"
+        );
+    }
+
+    @Test
+    void testRecalculateBalance_EmptyTransactionLogWithIncorrectBalance() {
+        this.user.setAccountBalance(200.0);
+        assertEquals(
+            0.0, this.userAccount.recalculateBalance(),
+            "The balance should be 0.0 if the transaction log is empty, " +
+                "even if the User's account balance was previously incorrect"
+        );
+    }
+
+    // equals() tests ------------------------------------------------
+    @Test
+    void testEquals_SameUserAndTransactionLog() {
+        UserAccount anotherUserAccount = new UserAccount(user);
+        anotherUserAccount.getTransactionLog().add(creditEvent);
+        userAccount.getTransactionLog().add(creditEvent);
+        assertEquals(userAccount, anotherUserAccount);
+    }
+
+    @Test
+    void testEquals_SameUserReorderedTransactionLog() {
+        UserAccount anotherUserAccount = new UserAccount(user);
+        anotherUserAccount.getTransactionLog().add(creditEvent);
+        anotherUserAccount.getTransactionLog().add(debitEvent);
+        userAccount.getTransactionLog().add(debitEvent);
+        userAccount.getTransactionLog().add(creditEvent);
+        assertEquals(userAccount, anotherUserAccount);
+    }
+
+    @Test
+    void testEquals_SameUserAndSameEmptyTransactionLog() {
+        UserAccount anotherUserAccount = new UserAccount(user);
+        assertEquals(userAccount, anotherUserAccount);
+    }
+
+    @Test
+    void testEquals_SameUserAndDifferentTransactionLog() {
+        UserAccount anotherUserAccount = new UserAccount(user);
+        TransactionEvent anotherCreditEvent = new TransactionEvent(3L, TransactionType.CREDIT, 200.0);
+        anotherUserAccount.getTransactionLog().add(anotherCreditEvent);
+        anotherUserAccount.getTransactionLog().add(debitEvent);
+        assertNotEquals(userAccount, anotherUserAccount);
+    }
+
+    @Test
+    void testEquals_DuplicateUser() throws InsufficientBalanceException {
+        UserDetails anotherUserDetails = new UserDetails(
+            "John", "Doe", "john.doe@example.com", "pass"
+        );
+        User anotherUser = new User(anotherUserDetails);
+        UserAccount anotherUserAccount = new UserAccount(anotherUser);
+        anotherUserAccount.addTransactionEvent(this.creditEvent);
+        this.userAccount.addTransactionEvent(this.creditEvent);
+        assertEquals(this.userAccount, anotherUserAccount);
+    }
+
+    @Test
+    void testEquals_DifferentUser() {
+        User anotherUser = new User(this.userDetails);
+        UserAccount anotherUserAccount = new UserAccount(anotherUser);
+        anotherUserAccount.getTransactionLog().add(this.creditEvent);
+        anotherUserAccount.getTransactionLog().add(this.debitEvent);
+        assertNotEquals(this.userAccount, anotherUserAccount);
+    }
+
+    @Test
+    void testEquals_DifferentUserAndTransactionLog() {
+        User anotherUser = new User(this.userDetails);
+        UserAccount anotherUserAccount = new UserAccount(anotherUser);
+        TransactionEvent anotherCreditEvent = new TransactionEvent(3L, TransactionType.CREDIT, 200.0);
+        anotherUserAccount.getTransactionLog().add(anotherCreditEvent);
+        anotherUserAccount.getTransactionLog().add(debitEvent);
+        assertNotEquals(userAccount, anotherUserAccount);
+    }
+}

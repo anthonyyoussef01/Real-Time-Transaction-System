@@ -18,30 +18,49 @@ public class UserDetails {
         this.hashedPassword = password;
     }
 
-    // GETTERS
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        UserDetails that = (UserDetails) o;
+        return this.firstName.equals(that.firstName) &&
+               this.lastName.equals(that.lastName) &&
+               this.email.equals(that.email) &&
+               this.hashedPassword.equals(that.hashedPassword);
+    }
+
+    // GETTERS ------------------------------------------------
     public String getFirstName() {
         return firstName;
     }
+
     public String getLastName() {
         return lastName;
     }
+
     public String getEmail() {
         return email;
     }
+
     public String getHashedPassword() {
         return hashedPassword;
     }
 
-    // SETTERS
+    // SETTERS ------------------------------------------------
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
+
     public void setHashedPassword(String password) {
         // Hash the password before storing it
         this.hashedPassword = password;

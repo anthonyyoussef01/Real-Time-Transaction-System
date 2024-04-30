@@ -15,18 +15,31 @@ public class User {
         this.accountBalance = 0.0;
     }
 
-    // GETTERS
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        User user = (User) o;
+        return Double.compare(user.accountBalance, this.accountBalance) == 0 &&
+               this.userDetails.equals(user.userDetails);
+    }
+
+    // GETTERS ------------------------------------------------
     public UserDetails getUserDetails() {
         return userDetails;
     }
+
     public double getAccountBalance() {
         return accountBalance;
     }
 
-    // SETTERS
+    // SETTERS ------------------------------------------------
     public void setUserDetails(UserDetails userDetails) {
         this.userDetails = userDetails;
     }
+
     public void setAccountBalance(double accountBalance) {
         this.accountBalance = accountBalance;
     }
