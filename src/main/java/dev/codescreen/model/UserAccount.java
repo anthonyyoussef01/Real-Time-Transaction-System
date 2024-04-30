@@ -52,6 +52,13 @@ public class UserAccount {
      * @param event The event to add to the transactionLog
      */
     public void addTransactionEvent(TransactionEvent event) throws InsufficientBalanceException, IllegalArgumentException {
+        if (event.getAmount() < 0) {
+            throw new IllegalArgumentException("Transaction amount must be positive: " + event.getAmount());
+        }
+        if (event.getTransactionType() == null) {
+            throw new IllegalArgumentException("Transaction type cannot be null");
+        }
+
         switch (event.getTransactionType()) {
             case CREDIT:                                                    // Add money to a user
                 this.user.setAccountBalance(this.user.getAccountBalance() + event.getAmount());
