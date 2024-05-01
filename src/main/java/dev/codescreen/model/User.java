@@ -7,10 +7,12 @@ package dev.codescreen.model;
  * Domain Model.
  */
 public class User {
+    private final int userId;
     private UserDetails userDetails;
     private double accountBalance;
 
     public User(UserDetails userDetails) {
+        this.userId = userDetails.hashCode();
         this.userDetails = userDetails;
         this.accountBalance = 0.0;
     }
@@ -33,6 +35,10 @@ public class User {
 
     public double getAccountBalance() {
         return accountBalance;
+    }
+
+    public int getUserId() {
+        return userId;
     }
 
     // SETTERS ------------------------------------------------
