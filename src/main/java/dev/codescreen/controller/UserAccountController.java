@@ -40,14 +40,17 @@ public class UserAccountController {
      */
     @PutMapping("/authorization")
     public ResponseEntity<AuthorizationResponse> authorizeTransaction(@RequestBody AuthorizationRequest request) {
+        UserAccount userAccount = userAccountService.getUserAccount(request.getUserId());
+        if (userAccount == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        userAccount.recalculateBalance();           // Recalculate the balance before processing the transaction
+        TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.DEBIT, request.getAmount());
         try {
-            UserAccount userAccount = userAccountService.getUserAccount(request.getUserId());
-            TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.DEBIT, request.getAmount());
             userAccount.addTransactionEvent(event);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new AuthorizationResponse(request.getUserId(), request.getMessageId(), "APPROVED", userAccount.recalculateBalance()));
-        } catch (InsufficientBalanceException e) {
+        } catch (IllegalArgumentException | InsufficientBalanceException e) {
             return ResponseEntity.status(HttpStatus.CREATED).body(new AuthorizationResponse(request.getUserId(), request.getMessageId(), "DECLINED", userAccountService.getUserAccount(request.getUserId()).recalculateBalance()));
         }
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthorizationResponse(request.getUserId(), request.getMessageId(), "APPROVED", userAccount.recalculateBalance()));
     }
 
     /**
@@ -59,23 +62,16 @@ public class UserAccountController {
     @PutMapping("/load")
     public ResponseEntity<LoadResponse> loadTransaction(@RequestBody LoadRequest request) {
         UserAccount userAccount = userAccountService.getUserAccount(request.getUserId());
-        if (userAccount == null) {
-            logger.error("UserAccount not found for userId: ", request.getUserId());
+        if (userAccount == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        userAccount.recalculateBalance();           // Recalculate the balance before processing the transaction
+        TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.CREDIT, request.getAmount());
         try {
-            TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.CREDIT, request.getAmount());
-            try {
-                userAccount.addTransactionEvent(event);
-            } catch (IllegalArgumentException | InsufficientBalanceException e) {
-                logger.error("Exception caught: ", e);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
-            }
-            return ResponseEntity.status(HttpStatus.CREATED).body(new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
-
-        } catch (Exception e) {
+            userAccount.addTransactionEvent(event);
+        } catch (IllegalArgumentException | InsufficientBalanceException e) {
             logger.error("Exception caught: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
         }
+        return ResponseEntity.status(HttpStatus.CREATED).body(new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
     }
 }
