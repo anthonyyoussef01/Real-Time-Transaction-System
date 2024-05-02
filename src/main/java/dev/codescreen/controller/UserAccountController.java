@@ -44,13 +44,22 @@ public class UserAccountController {
         if (userAccount == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         userAccount.recalculateBalance();           // Recalculate the balance before processing the transaction
-        TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.DEBIT, request.getAmount());
+        TransactionEvent event = new TransactionEvent(
+            System.currentTimeMillis(), TransactionType.DEBIT, request.getAmount()
+        );
         try {
             userAccount.addTransactionEvent(event);
         } catch (IllegalArgumentException | InsufficientBalanceException e) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(new AuthorizationResponse(request.getUserId(), request.getMessageId(), "DECLINED", userAccountService.getUserAccount(request.getUserId()).recalculateBalance()));
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                new AuthorizationResponse(
+                    request.getUserId(), request.getMessageId(),
+                    "DECLINED", userAccountService.getUserAccount(
+                        request.getUserId()).recalculateBalance()));
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthorizationResponse(request.getUserId(), request.getMessageId(), "APPROVED", userAccount.recalculateBalance()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            new AuthorizationResponse(
+                request.getUserId(), request.getMessageId(),
+                "APPROVED", userAccount.recalculateBalance()));
     }
 
     /**
@@ -65,13 +74,18 @@ public class UserAccountController {
         if (userAccount == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         userAccount.recalculateBalance();           // Recalculate the balance before processing the transaction
-        TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.CREDIT, request.getAmount());
+        TransactionEvent event = new TransactionEvent(
+            System.currentTimeMillis(), TransactionType.CREDIT, request.getAmount()
+        );
         try {
             userAccount.addTransactionEvent(event);
         } catch (IllegalArgumentException | InsufficientBalanceException e) {
             logger.error("Exception caught: ", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new LoadResponse(
+                    request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
     }
 }
