@@ -1,5 +1,9 @@
 package dev.codescreen.controller;
 
+import dev.codescreen.dto.AuthorizationRequest;
+import dev.codescreen.dto.AuthorizationResponse;
+import dev.codescreen.dto.LoadRequest;
+import dev.codescreen.dto.LoadResponse;
 import dev.codescreen.exceptions.InsufficientBalanceException;
 import dev.codescreen.model.*;
 import dev.codescreen.service.UserAccountService;

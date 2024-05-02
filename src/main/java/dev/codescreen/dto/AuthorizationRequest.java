@@ -1,4 +1,4 @@
-package dev.codescreen.model;
+package dev.codescreen.dto;
 
 public class AuthorizationRequest {
     private Integer userId;
