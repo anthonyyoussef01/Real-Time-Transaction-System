@@ -275,4 +275,71 @@ public class UserAccountControllerTest {
         assertEquals(request.getMessageId(), response.getBody().getMessageId());
         assertEquals(0.0, response.getBody().getBalance(), 0.001);      // verify balance was not changed
     }
+
+    @Test
+    public void testLoadTransactionLargeAmount() {
+        LoadRequest request = new LoadRequest(1, "messageId", Double.MAX_VALUE);
+        when(this.userAccountService.getUserAccount(request.getUserId())).thenReturn(this.userAccount);
+
+        ResponseEntity<LoadResponse> response = this.userAccountController.loadTransaction(request);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(Double.MAX_VALUE, Objects.requireNonNull(response.getBody()).getBalance(), 0.001);
+    }
+
+    @Test
+    public void testLoadTransactionSmallAmount() {
+        LoadRequest request = new LoadRequest(1, "messageId", Double.MIN_VALUE);
+        when(this.userAccountService.getUserAccount(request.getUserId())).thenReturn(this.userAccount);
+
+        ResponseEntity<LoadResponse> response = this.userAccountController.loadTransaction(request);
+
+        // Add assertions to verify the response
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(Double.MIN_VALUE, Objects.requireNonNull(response.getBody()).getBalance(), 0.001);
+    }
+
+    // I think this works, but I'm not sure.
+    @Test
+    public void testConcurrentLoadTransactions() throws InterruptedException {
+        LoadRequest request = new LoadRequest(1, "messageId", 100.0);
+        when(this.userAccountService.getUserAccount(request.getUserId())).thenReturn(this.userAccount);
+
+        Thread thread1 = new Thread(() -> this.userAccountController.loadTransaction(request));
+        Thread thread2 = new Thread(() -> this.userAccountController.loadTransaction(request));
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        assertEquals(200.0, this.userAccount.recalculateBalance(), 0.001);
+    }
+
+    // loadTransaction() and authorizeTransaction() tests ------------------------------------------------
+    @Test
+    public void testLoadTransactionAndAuthorizeTransaction() {
+        LoadRequest loadRequest = new LoadRequest(1, "messageId", 100.0);
+        AuthorizationRequest authorizeRequest = new AuthorizationRequest(1, "messageId", 100.0);
+
+        when(this.userAccountService.getUserAccount(loadRequest.getUserId())).thenReturn(this.userAccount);
+        when(this.userAccountService.getUserAccount(authorizeRequest.getUserId())).thenReturn(this.userAccount);
+
+        ResponseEntity<LoadResponse> loadResponse = this.userAccountController.loadTransaction(loadRequest);
+        ResponseEntity<AuthorizationResponse> authorizeResponse = this.userAccountController.authorizeTransaction(authorizeRequest);
+
+        assertEquals(HttpStatus.CREATED, loadResponse.getStatusCode());
+        assertEquals(HttpStatus.CREATED, authorizeResponse.getStatusCode());
+        assertEquals(loadRequest.getUserId(), Objects.requireNonNull(loadResponse.getBody()).getUserId());
+        assertEquals(loadRequest.getMessageId(), loadResponse.getBody().getMessageId());
+        assertEquals(authorizeRequest.getUserId(), Objects.requireNonNull(authorizeResponse.getBody()).getUserId());
+        assertEquals(authorizeRequest.getMessageId(), authorizeResponse.getBody().getMessageId());
+        assertEquals(
+            100.0, loadResponse.getBody().getBalance(), 0.001               // verify balance was updated correctly
+        );
+        assertEquals(
+            0.0, authorizeResponse.getBody().getBalance(), 0.001           // verify balance was updated correctly
+        );
+    }
 }
