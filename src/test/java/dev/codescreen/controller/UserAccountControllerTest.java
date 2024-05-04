@@ -327,7 +327,9 @@ public class UserAccountControllerTest {
         when(this.userAccountService.getUserAccount(authorizeRequest.getUserId())).thenReturn(this.userAccount);
 
         ResponseEntity<LoadResponse> loadResponse = this.userAccountController.loadTransaction(loadRequest);
-        ResponseEntity<AuthorizationResponse> authorizeResponse = this.userAccountController.authorizeTransaction(authorizeRequest);
+        ResponseEntity<AuthorizationResponse> authorizeResponse = this.userAccountController.authorizeTransaction(
+            authorizeRequest
+        );
 
         assertEquals(HttpStatus.CREATED, loadResponse.getStatusCode());
         assertEquals(HttpStatus.CREATED, authorizeResponse.getStatusCode());
@@ -336,10 +338,30 @@ public class UserAccountControllerTest {
         assertEquals(authorizeRequest.getUserId(), Objects.requireNonNull(authorizeResponse.getBody()).getUserId());
         assertEquals(authorizeRequest.getMessageId(), authorizeResponse.getBody().getMessageId());
         assertEquals(
-            100.0, loadResponse.getBody().getBalance(), 0.001               // verify balance was updated correctly
+            100.0, loadResponse.getBody().getBalance(), 0.001           // verify balance was updated correctly
         );
         assertEquals(
-            0.0, authorizeResponse.getBody().getBalance(), 0.001           // verify balance was updated correctly
+            0.0, authorizeResponse.getBody().getBalance(), 0.001        // verify balance was updated correctly
         );
+    }
+
+    @Test
+    public void testLoadAndAuthorizeTransactionInsufficientBalance() {
+        // Load an amount (in this case, it's 50.0)
+        LoadRequest loadRequest = new LoadRequest(1, "messageId", debitEventFiftyTwoLong.getAmount());
+        when(this.userAccountService.getUserAccount(loadRequest.getUserId())).thenReturn(this.userAccount);
+        ResponseEntity<LoadResponse> loadResponse = this.userAccountController.loadTransaction(loadRequest);
+        assertEquals(HttpStatus.CREATED, loadResponse.getStatusCode());
+
+        // Authorize a larger amount (in this case, it's 60.0)
+        AuthorizationRequest authorizeRequest = new AuthorizationRequest(
+            1, "messageId", debitEventFiftyTwoLong.getAmount() + 10
+        );
+        when(this.userAccountService.getUserAccount(authorizeRequest.getUserId())).thenReturn(this.userAccount);
+        ResponseEntity<AuthorizationResponse> authorizeResponse = this.userAccountController.authorizeTransaction(
+            authorizeRequest
+        );
+        assertEquals(HttpStatus.CREATED, authorizeResponse.getStatusCode());
+        assertEquals("DECLINED", Objects.requireNonNull(authorizeResponse.getBody()).getResponseCode());
     }
 }
