@@ -220,4 +220,59 @@ public class UserAccountControllerTest {
             response.getBody().getBalance(), 0.001                              // verify balance was updated correctly
         );
     }
+
+    @Test
+    public void testLoadTransactionPositiveAmount() {
+        LoadRequest request = new LoadRequest(1, "messageId", 100.0);
+
+        when(this.userAccountService.getUserAccount(request.getUserId())).thenReturn(this.userAccount);
+
+        ResponseEntity<LoadResponse> response = this.userAccountController.loadTransaction(request);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(request.getUserId(), Objects.requireNonNull(response.getBody()).getUserId());
+        assertEquals(request.getMessageId(), response.getBody().getMessageId());
+        assertEquals(
+            100.0, response.getBody().getBalance(), 0.001               // verify balance was updated correctly
+        );
+    }
+
+    @Test
+    public void testLoadTransactionZeroAmount() {
+        LoadRequest request = new LoadRequest(1, "messageId", 0.0);
+
+        when(this.userAccountService.getUserAccount(request.getUserId())).thenReturn(this.userAccount);
+
+        ResponseEntity<LoadResponse> response = this.userAccountController.loadTransaction(request);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(request.getUserId(), Objects.requireNonNull(response.getBody()).getUserId());
+        assertEquals(request.getMessageId(), response.getBody().getMessageId());
+        assertEquals(0.0, response.getBody().getBalance(), 0.001);      // verify balance was not changed
+    }
+
+    @Test
+    public void testLoadTransactionUserNotFound() {
+        LoadRequest request = new LoadRequest(1, "messageId", 100.0);
+
+        when(this.userAccountService.getUserAccount(request.getUserId())).thenReturn(null);
+
+        ResponseEntity<LoadResponse> response = this.userAccountController.loadTransaction(request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    public void testLoadTransactionNegativeAmount() {
+        LoadRequest request = new LoadRequest(1, "messageId", -100.0);
+
+        when(this.userAccountService.getUserAccount(request.getUserId())).thenReturn(this.userAccount);
+
+        ResponseEntity<LoadResponse> response = this.userAccountController.loadTransaction(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(request.getUserId(), Objects.requireNonNull(response.getBody()).getUserId());
+        assertEquals(request.getMessageId(), response.getBody().getMessageId());
+        assertEquals(0.0, response.getBody().getBalance(), 0.001);      // verify balance was not changed
+    }
 }
