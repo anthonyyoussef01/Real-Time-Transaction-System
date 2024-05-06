@@ -5,7 +5,7 @@ public class AuthorizationRequest {
     private String messageId;
     private RequestAmount transactionAmount;
 
-    public AuthorizationRequest(String  userId, String messageId, RequestAmount transactionAmount) {
+    public AuthorizationRequest(String userId, String messageId, RequestAmount transactionAmount) {
         this.userId = Integer.parseInt(userId);
         this.messageId = messageId;
         this.transactionAmount = transactionAmount;

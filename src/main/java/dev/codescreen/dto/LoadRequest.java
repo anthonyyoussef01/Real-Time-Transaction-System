@@ -5,8 +5,8 @@ public class LoadRequest {
     private String messageId;
     private RequestAmount transactionAmount;
 
-    public LoadRequest(Integer userId, String messageId, RequestAmount transactionAmount) {
-        this.userId = userId;
+    public LoadRequest(String userId, String messageId, RequestAmount transactionAmount) {
+        this.userId = Integer.parseInt(userId);
         this.messageId = messageId;
         this.transactionAmount = transactionAmount;
     }
