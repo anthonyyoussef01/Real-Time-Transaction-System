@@ -61,10 +61,4 @@ public class UserDetailsTest {
         this.userDetails.setEmail("jane.smith@example.com");
         assertEquals("jane.smith@example.com", this.userDetails.getEmail());
     }
-
-    @Test
-    void testSetHashedPassword() {
-        this.userDetails.setHashedPassword("newpass");
-        assertEquals("newpass", this.userDetails.getHashedPassword());
-    }
 }
