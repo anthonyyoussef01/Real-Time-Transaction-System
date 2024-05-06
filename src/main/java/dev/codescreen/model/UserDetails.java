@@ -58,7 +58,7 @@ public class UserDetails {
     }
 
     public void setHashedPassword(String password) {
-        // Hash the password before storing it
+        // TODO: Hash the password before storing it
         this.hashedPassword = password;
     }
 }

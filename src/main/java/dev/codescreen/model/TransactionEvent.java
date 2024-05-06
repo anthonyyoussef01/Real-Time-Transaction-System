@@ -4,7 +4,8 @@ import java.util.Objects;
 
 /*
  * This class represents a TransactionEvent object.
- * A TransactionEvent object will have a long timestamp, TransactionType transaction type, and double amount.
+ * A TransactionEvent object will have a long timestamp, TransactionType transaction type, double amount,
+ * String messageId, and String currency.
  */
 public class TransactionEvent {
     private long timestamp;

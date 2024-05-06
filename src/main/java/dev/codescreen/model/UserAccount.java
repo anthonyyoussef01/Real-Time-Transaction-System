@@ -7,7 +7,7 @@ import java.util.List;
 
 /*
  * This class represents a UserAccount object.
- * A UserAccount object will have a User object and a List of TransactionEvent objects.
+ * A UserAccount object will have a User object, a List of TransactionEvent objects, and a String currency.
  * This class is considered the Aggregate according to Domain-Driven Design principles. It is the only member of the
  * Aggregate that outside objects are allowed to hold references to, and it's responsible for updating the User object.
  */

@@ -4,7 +4,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Ping DTO class. Returns the server time, a Date-Time string.
+ * Represents the Ping DTO class.
+ * Returns the server time, a Date-Time string.
  */
 public class Ping {
     private final String serverTime;

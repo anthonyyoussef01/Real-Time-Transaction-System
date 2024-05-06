@@ -4,7 +4,7 @@ import dev.codescreen.model.TransactionType;
 
 /*
 * This class represents the balance of a user account. It is used in the Response classes.
-* A balance has a double amount, a String currency, and a TransactionType of either DEBIT or CREDIT.
+* A ResponseBalance has a double amount, a String currency, and a TransactionType of either DEBIT or CREDIT.
 * */
 public class ResponseBalance {
     private double amount;

@@ -1,5 +1,9 @@
 package dev.codescreen.dto;
 
+/**
+ * Represents the response to an authorization request.
+ * An authorization response includes an Integer user ID, a String message ID, and a RequestAmount transaction amount.
+ */
 public class AuthorizationRequest {
     private Integer userId;
     private String messageId;

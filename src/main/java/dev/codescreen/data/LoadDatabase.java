@@ -8,6 +8,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/*
+ * This class represents the LoadDatabase object.
+ * The LoadDatabase object is a Configuration class that initializes the database with predefined UserAccount objects.
+ * The purpose of this class is to populate the database with UserAccount objects when the application starts.
+ * It also prints our the users that were saved to the database for easy reference.
+ */
 @Configuration
 public class LoadDatabase {
 

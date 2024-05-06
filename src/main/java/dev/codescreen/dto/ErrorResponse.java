@@ -1,5 +1,9 @@
 package dev.codescreen.dto;
 
+/*
+ * Represents the response to an error request.
+ * An error response includes a String message and a String code.
+ */
 public class ErrorResponse {
     private final String message;
     private final String code;

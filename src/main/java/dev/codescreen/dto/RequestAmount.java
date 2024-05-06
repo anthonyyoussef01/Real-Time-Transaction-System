@@ -1,5 +1,9 @@
 package dev.codescreen.dto;
 
+/*
+ * Represents the request to load money into a User's account.
+ * A LoadRequest includes an Integer user ID, a String message ID, and a RequestAmount transaction amount.
+ */
 public class RequestAmount {
     private final double amount;
     private final String currency;
