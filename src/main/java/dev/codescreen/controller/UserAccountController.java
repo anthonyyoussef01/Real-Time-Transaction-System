@@ -31,8 +31,8 @@ public class UserAccountController {
      * @return ResponseEntity object containing a String message "Pong! Current server time is:" & current server time
      */
     @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
-        return ResponseEntity.ok("Pong! Current server time is: " + System.currentTimeMillis());
+    public ResponseEntity<Ping> ping() {
+        return ResponseEntity.ok(new Ping());
     }
 
     /**
