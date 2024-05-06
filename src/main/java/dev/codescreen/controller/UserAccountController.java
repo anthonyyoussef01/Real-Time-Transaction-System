@@ -27,6 +27,11 @@ public class UserAccountController {
         this.userAccountService = userAccountService;
     }
 
+    /**
+     * Ping the server to check if it is running.
+     *
+     * @return ResponseEntity object containing a String message "Pong! Current server time is:" & current server time
+     */
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("Pong! Current server time is: " + System.currentTimeMillis());
@@ -40,26 +45,35 @@ public class UserAccountController {
      */
     @PutMapping("/authorization")
     public ResponseEntity<AuthorizationResponse> authorizeTransaction(@RequestBody AuthorizationRequest request) {
-        UserAccount userAccount = userAccountService.getUserAccount(request.getUserId());
-        if (userAccount == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        userAccount.recalculateBalance();           // Recalculate the balance before processing the transaction
-        TransactionEvent event = new TransactionEvent(
-            System.currentTimeMillis(), TransactionType.DEBIT, request.getAmount()
-        );
         try {
-            userAccount.addTransactionEvent(event);
-        } catch (IllegalArgumentException | InsufficientBalanceException e) {
+            userAccountService.authorizeTransaction(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                 new AuthorizationResponse(
-                    request.getUserId(), request.getMessageId(),
-                    "DECLINED", userAccountService.getUserAccount(
-                        request.getUserId()).recalculateBalance()));
+                    request.getUserId(),
+                    request.getMessageId(),
+                    "APPROVED",
+                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                )
+            );
+        } catch (IllegalArgumentException | InsufficientBalanceException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new AuthorizationResponse(
+                    request.getUserId(),
+                    request.getMessageId(),
+                    "DECLINED",
+                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                )
+            );
+        } catch (NullPointerException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new AuthorizationResponse(
+                    request.getUserId(),
+                    request.getMessageId(),
+                    "NOT_FOUND",
+                    0.0
+                )
+            );
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-            new AuthorizationResponse(
-                request.getUserId(), request.getMessageId(),
-                "APPROVED", userAccount.recalculateBalance()));
     }
 
     /**
@@ -70,22 +84,31 @@ public class UserAccountController {
      */
     @PutMapping("/load")
     public ResponseEntity<LoadResponse> loadTransaction(@RequestBody LoadRequest request) {
-        UserAccount userAccount = userAccountService.getUserAccount(request.getUserId());
-        if (userAccount == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        userAccount.recalculateBalance();           // Recalculate the balance before processing the transaction
-        TransactionEvent event = new TransactionEvent(
-            System.currentTimeMillis(), TransactionType.CREDIT, request.getAmount()
-        );
         try {
-            userAccount.addTransactionEvent(event);
+            userAccountService.loadTransaction(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                new LoadResponse(
+                    request.getUserId(),
+                    request.getMessageId(),
+                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                )
+            );
         } catch (IllegalArgumentException | InsufficientBalanceException e) {
-            logger.error("Exception caught: ", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 new LoadResponse(
-                    request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
+                    request.getUserId(),
+                    request.getMessageId(),
+                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                )
+            );
+        } catch (NullPointerException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new LoadResponse(
+                    request.getUserId(),
+                    request.getMessageId(),
+                    0.0
+                )
+            );
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-            new LoadResponse(request.getUserId(), request.getMessageId(), userAccount.recalculateBalance()));
     }
 }

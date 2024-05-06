@@ -1,22 +1,53 @@
 package dev.codescreen.service;
 
-import dev.codescreen.model.UserAccount;
+import dev.codescreen.dto.AuthorizationRequest;
+import dev.codescreen.dto.LoadRequest;
+import dev.codescreen.exceptions.InsufficientBalanceException;
+import dev.codescreen.model.*;
+import dev.codescreen.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
-    private Map<Integer, UserAccount> userAccounts = new HashMap<>();
+    private final UserAccountRepository userAccountRepository;
+
+    public UserAccountServiceImpl(UserAccountRepository userAccountRepository) {
+        this.userAccountRepository = userAccountRepository;
+    }
 
     @Override
-    public UserAccount getUserAccount(Integer userId) {
-        return userAccounts.get(userId);
+    public UserAccount getUserAccount(Integer userId) throws IllegalArgumentException {
+        return userAccountRepository.getUserAccount(userId);
     }
 
     @Override
     public void saveUserAccount(UserAccount userAccount) {
-        userAccounts.put(userAccount.getUser().getUserId(), userAccount);
+        userAccountRepository.saveUserAccount(userAccount);
+    }
+
+    @Override
+    public void authorizeTransaction(
+        AuthorizationRequest request
+    ) throws IllegalArgumentException, InsufficientBalanceException, NullPointerException {
+        UserAccount userAccount = getUserAccount(request.getUserId());
+        if (userAccount == null) {
+            throw new NullPointerException("User account not found for userId: " + request.getUserId());
+        }
+        userAccount.recalculateBalance();
+        TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.DEBIT, request.getAmount());
+        userAccount.addTransactionEvent(event);
+    }
+
+    @Override
+    public void loadTransaction(
+        LoadRequest request
+    ) throws IllegalArgumentException, InsufficientBalanceException, NullPointerException {
+        UserAccount userAccount = getUserAccount(request.getUserId());
+        if (userAccount == null) {
+            throw new NullPointerException("User account not found for userId: " + request.getUserId());
+        }
+        userAccount.recalculateBalance();
+        TransactionEvent event = new TransactionEvent(System.currentTimeMillis(), TransactionType.CREDIT, request.getAmount());
+        userAccount.addTransactionEvent(event);
     }
 }
