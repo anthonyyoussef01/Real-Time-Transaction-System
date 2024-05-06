@@ -44,10 +44,6 @@ public class UserDetails {
         return email;
     }
 
-    public String getHashedPassword() {
-        return hashedPassword;
-    }
-
     // SETTERS ------------------------------------------------
     public void setFirstName(String firstName) {
         this.firstName = firstName;
