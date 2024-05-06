@@ -6,8 +6,8 @@ public class LoadResponse {
     private final ResponseBalance responseBalance;
 
     public LoadResponse(Integer userId, String messageId, ResponseBalance responseBalance) {
-        this.userId = userId;
         this.messageId = messageId;
+        this.userId = userId;
         this.responseBalance = responseBalance;
     }
 

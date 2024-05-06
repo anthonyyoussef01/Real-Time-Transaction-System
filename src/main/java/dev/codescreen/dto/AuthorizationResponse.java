@@ -7,8 +7,8 @@ public class AuthorizationResponse {
     private final ResponseBalance responseBalance;
 
     public AuthorizationResponse(Integer userId, String messageId, String responseCode, ResponseBalance responseBalance) {
-        this.userId = userId;
         this.messageId = messageId;
+        this.userId = userId;
         this.responseCode = responseCode;
         this.responseBalance = responseBalance;
     }
