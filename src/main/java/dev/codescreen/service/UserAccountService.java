@@ -2,6 +2,7 @@ package dev.codescreen.service;
 
 import dev.codescreen.dto.AuthorizationRequest;
 import dev.codescreen.dto.LoadRequest;
+import dev.codescreen.exceptions.IncorrectCurrencyException;
 import dev.codescreen.exceptions.InsufficientBalanceException;
 import dev.codescreen.model.UserAccount;
 
@@ -13,7 +14,7 @@ public interface UserAccountService {
      *               This userId is unique for each user.
      * @return The UserAccount object for the given userId.
      */
-    UserAccount getUserAccount(Integer userId) throws IllegalArgumentException;
+    UserAccount getUserAccount(Integer userId) throws IllegalArgumentException, NullPointerException;
 
     /**
      * This method saves the given UserAccount object.
@@ -32,7 +33,7 @@ public interface UserAccountService {
      */
     void authorizeTransaction(
         AuthorizationRequest request
-    ) throws IllegalArgumentException, InsufficientBalanceException, NullPointerException;
+    ) throws IllegalArgumentException, InsufficientBalanceException, NullPointerException, IncorrectCurrencyException;
 
     /**
      * This method loads a transaction for a user account.
@@ -44,5 +45,5 @@ public interface UserAccountService {
      */
     void loadTransaction(
         LoadRequest request
-    ) throws IllegalArgumentException, InsufficientBalanceException, NullPointerException;
+    ) throws IllegalArgumentException, InsufficientBalanceException, NullPointerException, IncorrectCurrencyException;
 }

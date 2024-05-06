@@ -1,17 +1,17 @@
 package dev.codescreen.dto;
 
 public class LoadResponse {
-    private Integer userId;
-    private String messageId;
-    private double balance;
+    private final Integer userId;
+    private final String messageId;
+    private final ResponseBalance responseBalance;
 
-    public LoadResponse(Integer userId, String messageId, double balance) {
-        this.userId = userId;
+    public LoadResponse(Integer userId, String messageId, ResponseBalance responseBalance) {
         this.messageId = messageId;
-        this.balance = balance;
+        this.userId = userId;
+        this.responseBalance = responseBalance;
     }
 
-    // GETTERS ------------------------------------------------\
+    // GETTERS ------------------------------------------------
     public Integer getUserId() {
         return userId;
     }
@@ -20,20 +20,7 @@ public class LoadResponse {
         return messageId;
     }
 
-    public double getBalance() {
-        return balance;
-    }
-
-    // SETTERS ------------------------------------------------\
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
+    public ResponseBalance getBalance() {
+        return responseBalance;
     }
 }

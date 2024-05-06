@@ -13,11 +13,13 @@ import java.util.List;
  */
 public class UserAccount {
     private final User user;
-    private List<TransactionEvent> transactionLog;
+    private final List<TransactionEvent> transactionLog;
+    private final String currency;
 
-    public UserAccount(User user) {
+    public UserAccount(User user, String currency) {
         this.user = user;
         this.transactionLog = new ArrayList<>();
+        this.currency = currency;
     }
 
     @Override
@@ -41,6 +43,10 @@ public class UserAccount {
 
     public List<TransactionEvent> getTransactionLog() {
         return transactionLog;
+    }
+
+    public String getCurrency() {
+        return currency;
     }
 
     // METHODS ------------------------------------------------

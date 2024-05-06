@@ -10,11 +10,15 @@ public class TransactionEvent {
     private long timestamp;
     private TransactionType transactionType;
     private double amount;
+    private String messageId;
+    private String currency;
 
-    public TransactionEvent(long timestamp, TransactionType transactionType, double amount) {
+    public TransactionEvent(long timestamp, TransactionType transactionType, double amount, String messageId, String currency) {
         this.timestamp = timestamp;
         this.transactionType = transactionType;
         this.amount = amount;
+        this.messageId = messageId;
+        this.currency = currency;
     }
 
     @Override
@@ -42,6 +46,14 @@ public class TransactionEvent {
         return amount;
     }
 
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
     // SETTERS ------------------------------------------------
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
@@ -53,5 +65,13 @@ public class TransactionEvent {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 }

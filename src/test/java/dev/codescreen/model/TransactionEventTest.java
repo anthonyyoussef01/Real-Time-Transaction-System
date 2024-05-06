@@ -10,21 +10,25 @@ public class TransactionEventTest {
 
     @BeforeEach
     void setUp() {
-        this.transactionEvent = new TransactionEvent(1L, TransactionType.CREDIT, 150.0);
+        this.transactionEvent = new TransactionEvent(
+            1L, TransactionType.CREDIT, 150.0, "messageId", "USD"
+        );
     }
 
     // equals() tests ------------------------------------------------
     @Test
     void testEquals_SameTransactionEvent() {
         assertEquals(this.transactionEvent, this.transactionEvent);
-        TransactionEvent anotherTransactionEvent = new TransactionEvent(1L, TransactionType.CREDIT, 150.0);
+        TransactionEvent anotherTransactionEvent = new TransactionEvent(
+            1L, TransactionType.CREDIT, 150.0, "messageId", "USD"
+        );
         assertEquals(this.transactionEvent, anotherTransactionEvent);
     }
 
     @Test
     void testEquals_DifferentTimestamp() {
         TransactionEvent anotherTransactionEvent = new TransactionEvent(
-            2L, TransactionType.CREDIT, 150.0
+            2L, TransactionType.CREDIT, 150.0, "messageId", "USD"
         );
         assertNotEquals(this.transactionEvent, anotherTransactionEvent);
     }
@@ -32,7 +36,7 @@ public class TransactionEventTest {
     @Test
     void testEquals_DifferentTransactionType() {
         TransactionEvent anotherTransactionEvent = new TransactionEvent(
-            1L, TransactionType.DEBIT, 150.0
+            1L, TransactionType.DEBIT, 150.0, "messageId", "USD"
         );
         assertNotEquals(this.transactionEvent, anotherTransactionEvent);
     }
@@ -40,7 +44,7 @@ public class TransactionEventTest {
     @Test
     void testEquals_DifferentAmount() {
         TransactionEvent anotherTransactionEvent = new TransactionEvent(
-            1L, TransactionType.CREDIT, 200.0
+            1L, TransactionType.CREDIT, 200.0, "messageId", "USD"
         );
         assertNotEquals(this.transactionEvent, anotherTransactionEvent);
     }

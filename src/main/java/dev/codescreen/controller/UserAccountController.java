@@ -1,9 +1,7 @@
 package dev.codescreen.controller;
 
-import dev.codescreen.dto.AuthorizationRequest;
-import dev.codescreen.dto.AuthorizationResponse;
-import dev.codescreen.dto.LoadRequest;
-import dev.codescreen.dto.LoadResponse;
+import dev.codescreen.dto.*;
+import dev.codescreen.exceptions.IncorrectCurrencyException;
 import dev.codescreen.exceptions.InsufficientBalanceException;
 import dev.codescreen.model.*;
 import dev.codescreen.service.UserAccountService;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.ResourceAccessException;
 
 @RestController
 public class UserAccountController {
@@ -33,44 +32,55 @@ public class UserAccountController {
      * @return ResponseEntity object containing a String message "Pong! Current server time is:" & current server time
      */
     @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
-        return ResponseEntity.ok("Pong! Current server time is: " + System.currentTimeMillis());
+    public ResponseEntity<?> ping() {
+        try {
+            // TODO: Ping the server to check if it is running
+            return ResponseEntity.ok(new Ping());
+        } catch (ResourceAccessException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+                new ErrorResponse(
+                    "Server is currently unavailable",
+                    "503"
+                )
+            );
+        }
     }
 
     /**
      * Authorize a transaction for a user account.
      *
      * @param request AuthorizationRequest object containing the user ID, message ID, and amount.
-     * @return ResponseEntity object containing the AuthorizationResponse object.
+     * @return ResponseEntity object containing the AuthorizationResponse object or ErrorResponse object.
      */
     @PutMapping("/authorization")
-    public ResponseEntity<AuthorizationResponse> authorizeTransaction(@RequestBody AuthorizationRequest request) {
+    public ResponseEntity<?> authorizeTransaction(@RequestBody AuthorizationRequest request) {
         try {
             userAccountService.authorizeTransaction(request);
+            ResponseBalance responseBalance = new ResponseBalance(
+                userAccountService.getUserAccount(request.getUserId()).recalculateBalance(),
+                request.getTransactionAmount().getCurrency(),
+                TransactionType.DEBIT
+            );
             return ResponseEntity.status(HttpStatus.CREATED).body(
                 new AuthorizationResponse(
                     request.getUserId(),
                     request.getMessageId(),
                     "APPROVED",
-                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                    responseBalance
                 )
             );
-        } catch (IllegalArgumentException | InsufficientBalanceException e) {
+        } catch (IllegalArgumentException | InsufficientBalanceException | IncorrectCurrencyException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                new AuthorizationResponse(
-                    request.getUserId(),
+                new ErrorResponse(
                     request.getMessageId(),
-                    "DECLINED",
-                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                    "DECLINED"
                 )
             );
         } catch (NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new AuthorizationResponse(
-                    request.getUserId(),
+                new ErrorResponse(
                     request.getMessageId(),
-                    "NOT_FOUND",
-                    0.0
+                    "DECLINED"
                 )
             );
         }
@@ -80,33 +90,36 @@ public class UserAccountController {
      * Load a transaction for a user account.
      *
      * @param request LoadRequest object containing the user ID, message ID, and amount.
-     * @return ResponseEntity object containing the LoadResponse object.
+     * @return ResponseEntity object containing the LoadResponse object or ErrorResponse object.
      */
     @PutMapping("/load")
-    public ResponseEntity<LoadResponse> loadTransaction(@RequestBody LoadRequest request) {
+    public ResponseEntity<?> loadTransaction(@RequestBody LoadRequest request) {
         try {
             userAccountService.loadTransaction(request);
+            ResponseBalance responseBalance = new ResponseBalance(
+                userAccountService.getUserAccount(request.getUserId()).recalculateBalance(),
+                request.getTransactionAmount().getCurrency(),
+                TransactionType.CREDIT
+            );
             return ResponseEntity.status(HttpStatus.CREATED).body(
                 new LoadResponse(
                     request.getUserId(),
                     request.getMessageId(),
-                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                    responseBalance
                 )
             );
-        } catch (IllegalArgumentException | InsufficientBalanceException e) {
+        } catch (IllegalArgumentException | InsufficientBalanceException | IncorrectCurrencyException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                new LoadResponse(
-                    request.getUserId(),
+                new ErrorResponse(
                     request.getMessageId(),
-                    userAccountService.getUserAccount(request.getUserId()).recalculateBalance()
+                    "DECLINED"
                 )
             );
         } catch (NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new LoadResponse(
-                    request.getUserId(),
+                new ErrorResponse(
                     request.getMessageId(),
-                    0.0
+                    "DECLINED"
                 )
             );
         }
