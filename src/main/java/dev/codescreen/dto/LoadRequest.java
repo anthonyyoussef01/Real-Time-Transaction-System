@@ -3,15 +3,15 @@ package dev.codescreen.dto;
 public class LoadRequest {
     private Integer userId;
     private String messageId;
-    private double amount;
+    private RequestAmount transactionAmount;
 
-    public LoadRequest(Integer userId, String messageId, double amount) {
+    public LoadRequest(Integer userId, String messageId, RequestAmount transactionAmount) {
         this.userId = userId;
         this.messageId = messageId;
-        this.amount = (double) amount;
+        this.transactionAmount = transactionAmount;
     }
 
-    // GETTERS ------------------------------------------------\
+    // GETTERS ------------------------------------------------
     public Integer getUserId() {
         return userId;
     }
@@ -20,20 +20,7 @@ public class LoadRequest {
         return messageId;
     }
 
-    public double getAmount() {
-        return amount;
-    }
-
-    // SETTERS ------------------------------------------------\
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
+    public RequestAmount getTransactionAmount() {
+        return transactionAmount;
     }
 }

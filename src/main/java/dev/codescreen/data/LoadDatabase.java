@@ -20,7 +20,7 @@ public class LoadDatabase {
                     "User" + i, "LastName", "user" + i + "@example.com", "1234567890"
                 );
                 User user = new User(userDetails);
-                UserAccount userAccount = new UserAccount(user);
+                UserAccount userAccount = new UserAccount(user, "USD");
                 service.saveUserAccount(userAccount);
                 System.out.println("Saved UserAccount with userId: " + userAccount.getUser().getUserId());
             }

@@ -1,19 +1,19 @@
 package dev.codescreen.dto;
 
 public class AuthorizationResponse {
-    private Integer userId;
-    private String messageId;
-    private String responseCode;
-    private double balance;
+    private final Integer userId;
+    private final String messageId;
+    private final String responseCode;
+    private final ResponseBalance responseBalance;
 
-    public AuthorizationResponse(Integer userId, String messageId, String responseCode, double balance) {
+    public AuthorizationResponse(Integer userId, String messageId, String responseCode, ResponseBalance responseBalance) {
         this.userId = userId;
         this.messageId = messageId;
         this.responseCode = responseCode;
-        this.balance = balance;
+        this.responseBalance = responseBalance;
     }
 
-    // GETTERS ------------------------------------------------\
+    // GETTERS ------------------------------------------------
     public Integer getUserId() {
         return userId;
     }
@@ -26,24 +26,7 @@ public class AuthorizationResponse {
         return responseCode;
     }
 
-    public double getBalance() {
-        return balance;
-    }
-
-    // SETTERS ------------------------------------------------\
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public void setResponseCode(String responseCode) {
-        this.responseCode = responseCode;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
+    public ResponseBalance getBalance() {
+        return responseBalance;
     }
 }
