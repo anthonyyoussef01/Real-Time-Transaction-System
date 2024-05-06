@@ -56,7 +56,7 @@ public class UserAccountControllerTest {
             "User2", "LastName", "user2@example.com", "0987654321"
         );
         this.user2 = new User(this.userDetails2);
-        this.userAccount2 = new UserAccount(this.user2, "USD");
+        this.userAccount2 = new UserAccount(this.user2, "GBP");
         this.userAccountRepository.saveUserAccount(this.userAccount2);
 
         // this makes sure that nonexistentUserId is not the same as user.getUserId() or user2.getUserId()
@@ -74,13 +74,13 @@ public class UserAccountControllerTest {
             1L, TransactionType.CREDIT, 150.0, "2341", "USD"
         );
         this.debitEventFiftyTwoLong = new TransactionEvent(
-            2L, TransactionType.DEBIT, 50.0, "2342", "EGP"
+            2L, TransactionType.DEBIT, 50.0, "2342", "USD"
         );
         this.creditEventOneHundredCurrentTime = new TransactionEvent(
-            System.currentTimeMillis(), TransactionType.CREDIT, 100.0, "2343", "EUR"
+            System.currentTimeMillis(), TransactionType.CREDIT, 100.0, "2343", "USD"
         );
         this.debitEventOneHundredCurrentTime = new TransactionEvent(
-            System.currentTimeMillis(), TransactionType.DEBIT, 100.0, "2344", "GBP"
+            System.currentTimeMillis(), TransactionType.DEBIT, 100.0, "2344", "USD"
         );
     }
 
@@ -213,7 +213,7 @@ public class UserAccountControllerTest {
     public void testAuthorizeTransactionZeroAmount() {
         AuthorizationRequest request = new AuthorizationRequest(
             Integer.toString(this.user2.getUserId()), "messageId", new RequestAmount(
-                "0", "USD", "DEBIT"
+                "0", "GBP", "DEBIT"
             )
         );
 
@@ -271,6 +271,80 @@ public class UserAccountControllerTest {
         assertEquals("APPROVED", responseBody.getResponseCode()); // verify transaction was approved
         // verify balance was updated correctly
         assertEquals(user.getAccountBalance(), 0, 0.001);
+    }
+
+    @Test
+    public void testAuthorizeTransactionGBP() {
+        AuthorizationRequest request = new AuthorizationRequest(
+            Integer.toString(this.user2.getUserId()), "messageId", new RequestAmount(
+                "100.0", "GBP", "DEBIT"
+            )
+        );
+
+        try {
+            userAccount2.addTransactionEvent(this.creditEventOneHundredCurrentTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        ResponseEntity<?> response = this.userAccountController.authorizeTransaction(request);
+        assertTrue(response.getBody() instanceof AuthorizationResponse);
+        AuthorizationResponse responseBody = (AuthorizationResponse) response.getBody();
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(request.getUserId(), Objects.requireNonNull(responseBody.getUserId()));
+        assertEquals(request.getMessageId(), responseBody.getMessageId());
+        assertEquals("APPROVED", responseBody.getResponseCode()); // verify transaction was approved
+        // verify balance was updated correctly
+        assertEquals(user2.getAccountBalance(), 0, 0.001);
+    }
+
+    @Test
+    public void testAuthorizeTransactionConflictingCurrencies() {
+        AuthorizationRequest request = new AuthorizationRequest(
+            Integer.toString(this.user.getUserId()), "messageId", new RequestAmount(
+                "100.0", "GBP", "DEBIT"
+            )
+        );
+
+        try {
+            userAccount.addTransactionEvent(this.creditEventOneHundredCurrentTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        ResponseEntity<?> response = this.userAccountController.authorizeTransaction(request);
+        assertTrue(response.getBody() instanceof ErrorResponse);
+        ErrorResponse responseBody = (ErrorResponse) response.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("DECLINED", Objects.requireNonNull(responseBody.getCode())); //verify transaction declined
+        // verify balance was not updated
+        assertEquals(100, user.getAccountBalance(), 0.001);
+    }
+
+    @Test
+    public void testAuthorizeTransactionWrongTransactionType() {
+        AuthorizationRequest request = new AuthorizationRequest(
+            Integer.toString(this.user.getUserId()), "messageId", new RequestAmount(
+                "100.0", "USD", "CREDIT"
+            )
+        );
+
+        try {
+            userAccount.addTransactionEvent(this.creditEventOneHundredCurrentTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        ResponseEntity<?> response = this.userAccountController.authorizeTransaction(request);
+        assertTrue(response.getBody() instanceof ErrorResponse);
+        ErrorResponse responseBody = (ErrorResponse) response.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("DECLINED", Objects.requireNonNull(responseBody.getCode())); //verify transaction declined
+        // verify balance was not updated
+        assertEquals(100.0, user.getAccountBalance(), 0.001);
     }
 
     // testLoadTransaction() tests ------------------------------------------------
@@ -436,6 +510,60 @@ public class UserAccountControllerTest {
         thread2.join();
 
         assertEquals(200.0, this.userAccount.recalculateBalance(), 0.001);
+    }
+
+    @Test
+    public void testLoadTransactionGBP() {
+        LoadRequest request = new LoadRequest(
+            Integer.toString(this.user2.getUserId()), "messageId", new RequestAmount(
+                "100.0", "GBP", "CREDIT"
+            )
+        );
+
+        ResponseEntity<?> response = this.userAccountController.loadTransaction(request);
+        assertTrue(response.getBody() instanceof LoadResponse);
+        LoadResponse responseBody = (LoadResponse) response.getBody();
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(request.getUserId(), responseBody.getUserId());
+        assertEquals(request.getMessageId(), responseBody.getMessageId());
+        assertEquals(
+            100.0,
+            user2.getAccountBalance(),
+            0.001                              // verify balance was updated correctly
+        );
+    }
+
+    @Test
+    public void testLoadTransactionConflictingCurrencies() {
+        LoadRequest request = new LoadRequest(
+            Integer.toString(this.user.getUserId()), "messageId", new RequestAmount(
+                "100.0", "GBP", "CREDIT"
+            )
+        );
+
+        ResponseEntity<?> response = this.userAccountController.loadTransaction(request);
+        assertTrue(response.getBody() instanceof ErrorResponse);
+        ErrorResponse responseBody = (ErrorResponse) response.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("DECLINED", Objects.requireNonNull(responseBody.getCode())); //verify transaction declined
+    }
+
+    @Test
+    public void testLoadTransactionWrongTransactionType() {
+        LoadRequest request = new LoadRequest(
+            Integer.toString(this.user.getUserId()), "messageId", new RequestAmount(
+                "100.0", "USD", "DEBIT"
+            )
+        );
+
+        ResponseEntity<?> response = this.userAccountController.loadTransaction(request);
+        assertTrue(response.getBody() instanceof ErrorResponse);
+        ErrorResponse responseBody = (ErrorResponse) response.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("DECLINED", Objects.requireNonNull(responseBody.getCode())); //verify transaction declined
     }
 
     // loadTransaction() and authorizeTransaction() tests ------------------------------------------------

@@ -38,6 +38,9 @@ public class UserAccountServiceImpl implements UserAccountService {
         if (!userAccount.getCurrency().equals(request.getTransactionAmount().getCurrency())) {
             throw new IncorrectCurrencyException("User account currency does not match transaction currency");
         }
+        if (! request.getTransactionAmount().getTransactionType().equals(TransactionType.DEBIT.toString())) {
+            throw new IllegalArgumentException("Invalid transaction type");
+        }
         userAccount.recalculateBalance();
         TransactionEvent event = new TransactionEvent(
             System.currentTimeMillis(),
@@ -56,6 +59,9 @@ public class UserAccountServiceImpl implements UserAccountService {
         UserAccount userAccount = getUserAccount(request.getUserId());
         if (!userAccount.getCurrency().equals(request.getTransactionAmount().getCurrency())) {
             throw new IncorrectCurrencyException("User account currency does not match transaction currency");
+        }
+        if (! request.getTransactionAmount().getTransactionType().equals(TransactionType.CREDIT.toString())) {
+            throw new IllegalArgumentException("Invalid transaction type");
         }
         userAccount.recalculateBalance();
         TransactionEvent event = new TransactionEvent(
