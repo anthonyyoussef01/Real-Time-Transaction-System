@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.ResourceAccessException;
 
 @RestController
 public class UserAccountController {
@@ -31,8 +32,18 @@ public class UserAccountController {
      * @return ResponseEntity object containing a String message "Pong! Current server time is:" & current server time
      */
     @GetMapping("/ping")
-    public ResponseEntity<Ping> ping() {
-        return ResponseEntity.ok(new Ping());
+    public ResponseEntity<?> ping() {
+        try {
+            // TODO: Ping the server to check if it is running
+            return ResponseEntity.ok(new Ping());
+        } catch (ResourceAccessException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+                new ErrorResponse(
+                    "Server is currently unavailable",
+                    "503"
+                )
+            );
+        }
     }
 
     /**
