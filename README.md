@@ -1,48 +1,17 @@
-**Important: Don't forget to update the [Candidate README](#candidate-readme) section**
-
-Real-time Transaction Challenge
-===============================
+Real-time Transaction System
+============================
 ## Overview
-Welcome to Current's take-home technical assessment for backend engineers! We appreciate you taking the time to complete this, and we're excited to see what you come up with.
-
-You are tasked with building a simple bank ledger system that utilizes the [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) pattern to maintain a transaction history. The system should allow users to perform basic banking operations such as depositing funds, withdrawing funds, and checking balances. The ledger should maintain a complete and immutable record of all transactions, enabling auditability and reconstruction of account balances at any point in time.
+Welcome to our real-time transaction system! This application is a simple bank ledger system that utilizes the [event sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) pattern to maintain a transaction history. It allows users to perform basic banking operations such as depositing funds, withdrawing funds, and checking balances. The ledger maintains a complete and immutable record of all transactions, enabling auditability and reconstruction of account balances at any point in time.
 
 ## Details
-The [included service.yml](service.yml) is the OpenAPI 3.0 schema to a service we would like you to create and host.
-
 The service accepts two types of transactions:
-1) Loads: Add money to a user (credit)
+1) Loads: This operation adds money to a user's account (credit).
 
-2) Authorizations: Conditionally remove money from a user (debit)
+2) Authorizations: This operation conditionally removes money from a user's account (debit).
 
-Every load or authorization PUT should return the updated balance following the transaction. Authorization declines should be saved, even if they do not impact balance calculation.
+Every load or authorization PUT returns the updated balance following the transaction. Authorization declines are saved, even if they do not impact balance calculation.
 
-
-Implement the event sourcing pattern to record all banking transactions as immutable events. Each event should capture relevant information such as transaction type, amount, timestamp, and account identifier.
-Define the structure of events and ensure they can be easily serialized and persisted to a data store of your choice. We do not expect you to use a persistent store (you can you in-memory object), but you can if you want. We should be able to bootstrap your project locally to test.
-
-## Expectations
-We are looking for attention in the following areas:
-1) Do you accept all requests supported by the schema, in the format described?
-
-2) Do your responses conform to the prescribed schema?
-
-3) Does the authorizations endpoint work as documented in the schema?
-
-4) Do you have unit and integrations test on the functionality?
-
-Here’s a breakdown of the key criteria we’ll be considering when grading your submission:
-
-**Adherence to Design Patterns:** We’ll evaluate whether your implementation follows established design patterns such as following the event sourcing model.
-
-**Correctness**: We’ll assess whether your implementation effectively implements the desired pattern and meets the specified requirements.
-
-**Testing:** We’ll assess the comprehensiveness and effectiveness of your test suite, including unit tests, integration tests, and possibly end-to-end tests. Your tests should cover critical functionalities, edge cases, and potential failure scenarios to ensure the stability of the system.
-
-**Documentation and Clarity:** We’ll assess the clarity of your documentation, including comments within the code, README files, architectural diagrams, and explanations of design decisions. Your documentation should provide sufficient context for reviewers to understand the problem, solution, and implementation details.
-
-# Candidate README
-## Bootstrap instructions
+The event sourcing pattern is implemented to record all banking transactions as immutable events. Each event captures relevant information such as transaction type, amount, timestamp, and account identifier. The structure of events is defined in a way that ensures they can be easily serialized and persisted to a data store. For the current version of the application, an in-memory object is used for data storage. The application can be easily bootstrapped locally for testing and exploration.## Bootstrap instructions
 In order to run the service, replace the JAVA_PATH below with the path to your Java.EXE file and run the following 
 command:
 
@@ -104,7 +73,7 @@ currency that they have in their account. This can be easily changed by calculat
 currencies and converting the amount to the user's currency before depositing or withdrawing. I believe that either way,
 the user should still be able to see the balance in their currency and should have 1 default currency.
 
-## Bonus: Deployment considerations
+## Deployment considerations
 - If I were to deploy this, I would make sure to implement password hashing and salting to ensure that the user's
 password is secure. I would consider Bcrypt, as unlike SHA, it is designed to be slow and I would use a high number of
 rounds to make it even slower. This is necessary for a banking application as it is a high-value target for hackers.
@@ -120,13 +89,3 @@ reset, etc. I would implement these APIs with the necessary security measures.
 jsp or thymeleaf. NextJS is also a good option as it allows for server-side rendering if such functionality is needed 
 (for example, to calculate the exchange rate between two currencies and convert the amount to the user's currency before
 depositing or withdrawing).
-
-## License
-
-At CodeScreen, we strongly value the integrity and privacy of our assessments. As a result, this repository is under exclusive copyright, which means you **do not** have permission to share your solution to this test publicly (i.e., inside a public GitHub/GitLab repo, on Reddit, etc.). <br>
-
-## Submitting your solution
-
-Please push your changes to the `main branch` of this repository. You can push one or more commits. <br>
-
-Once you are finished with the task, please click the `Submit Solution` link on <a href="https://app.codescreen.com/candidate/c8568970-9ef6-4426-a4f5-da3c885a9af3" target="_blank">this screen</a>.
